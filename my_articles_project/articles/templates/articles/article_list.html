@@ -1,0 +1,105 @@
+{% extends "layout_base.html" %}
+
+{% block head_title %}Listado de Artículos{% endblock %}
+
+{% block page_content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar de categorías -->
+        <div class="col-md-3">
+            <h5>Categorías</h5>
+            <ul class="list-group mb-3">
+                {% for cat in categories %}
+                    <a href="{% url 'articles:articles_by_category' cat.slug %}">
+                        {{ cat.name }}
+                    </a>
+                {% empty %}
+                    <li class="list-group-item">No hay categorías</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Contenido principal (artículos) -->
+        <div class="col-md-9">
+            <h1>Artículos</h1>
+
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input class="form-control" name="q" placeholder="Buscar..." value="{{ query }}">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </div>
+                <select name="sort" class="form-select" onchange="this.form.submit()">
+                    <option value="">Más recientes</option>
+                    <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>Más comentados</option>
+                    <option value="likes" {% if request.GET.sort == 'likes' %}selected{% endif %}>Más gustados</option>
+                </select>
+            </form>
+            <div class="mb-3">
+                <a href="{% url 'articles:export_csv' %}" class="btn btn-secondary">Exportar CSV</a>
+                <a href="{% url 'articles:export_json' %}" class="btn btn-secondary">Exportar JSON</a>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+                {% for article in articles %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'articles:article_detail' article.slug %}">{{ article.title }}</a>
+                                </h5>
+                                <p class="card-text">{{ article.content|truncatechars:200 }}</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Por {{ article.author.username }} • {{ article.created_at|date:"d/m/Y" }} • {{ article.category }}
+                                </small>
+                                <small class="text-muted">
+                                    {{ article.comments.count }} comentarios • {{ article.total_likes }} ❤️
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No hay artículos.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Paginación -->
+        <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mt-4">
+            {% if articles.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Anterior</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+
+            {% for num in articles.paginator.page_range %}
+            {% if articles.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% else %}
+                <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if articles.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Siguiente</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+            {% endif %}
+        </ul>
+        </nav>
+
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+

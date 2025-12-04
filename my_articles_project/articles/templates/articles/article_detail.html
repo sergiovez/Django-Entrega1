@@ -1,0 +1,109 @@
+{% extends "layout_base.html" %}
+{% load custom_filters %}
+
+{% block head_title %}{{ article.title }}{% endblock %}
+
+{% block page_content %}
+<div class="container my-4">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">{{ article.title }}</h1>
+            <p class="text-muted">
+                Por <strong>{{ article.author.username }}</strong> • {{ article.created_at|date:"d/m/Y H:i" }} • {{ article.category }}
+            </p>
+            <div class="card-text">
+                {{ article.content|linebreaks }}
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <small>{{ article.comments.count }} comentarios • {{ article.total_likes }} ❤️</small>
+            {% if user.is_authenticated %}
+                <form action="{% url 'articles:article_like' article.slug %}" method="post">
+                    {% csrf_token %}
+                    {% if user_has_liked %}
+                        <button type="submit" class="btn btn-danger btn-sm">💔 No me gusta</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary btn-sm">❤️ Me gusta</button>
+                    {% endif %}
+                </form>
+            {% endif %}
+        </div>
+
+        {% if request.user == article.author %}
+            <a href="{% url 'articles:article_edit' article.slug %}" class="btn btn-warning mt-2">
+                Editar artículo
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Comentarios -->
+    <div class="mb-4">
+        <h3>Comentarios</h3>
+        <ul class="list-group mb-3">
+            {% for comment in comments %}
+                <li class="list-group-item">
+                    <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">No hay comentarios todavía.</li>
+            {% endfor %}
+        </ul>
+
+        {% if user.is_authenticated %}
+            <form method="post">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit" name="comment_submit" class="btn btn-success mt-2">Enviar comentario</button>
+            </form>
+        {% else %}
+            <p>Debes <a href="{% url 'users:login' %}">iniciar sesión</a> para comentar.</p>
+        {% endif %}
+    </div>
+
+    <!-- Reviews -->
+    <div class="mb-4">
+        <h3>Reviews</h3>
+
+        <!-- Rating promedio -->
+        <p>Valoración media: {{ article.average_rating|default:"Sin valoraciones" }}</p>
+
+        <ul class="list-group mb-3">
+            {% for review in reviews %}
+                <li class="list-group-item">
+                    <strong>{{ review.reviewer.username }}</strong>: {{ review.rating }} ⭐ - {{ review.comment }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">No hay reviews todavía.</li>
+            {% endfor %}
+        </ul>
+
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'articles:review_article' article.slug %}">
+                {% csrf_token %}
+
+        <!-- Selección de rating -->
+        <label for="rating">Tu valoración:</label>
+        <select name="rating" id="rating" class="form-select d-inline w-auto mb-2">
+            {% for i in rating_choices %}
+                <option value="{{ i }}" {% if user_review and user_review.rating == i %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+
+
+        <!-- Comentario -->
+        <textarea name="comment" class="form-control mb-2" placeholder="Comentario opcional">
+            {% if user_review %}{{ user_review.comment }}{% endif %}
+        </textarea>
+                <button type="submit" class="btn btn-info btn-sm">Enviar review</button>
+            </form>
+        {% else %}
+            <p>Debes <a href="{% url 'users:login' %}">iniciar sesión</a> para dejar una review.</p>
+        {% endif %}
+    </div>
+
+    <a href="{% url 'articles:article_list' %}" class="btn btn-secondary">← Volver al listado</a>
+</div>
+{% endblock %}
+
+

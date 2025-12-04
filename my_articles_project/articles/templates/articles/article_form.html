@@ -1,0 +1,15 @@
+{% extends "layout_base.html" %}
+
+{% block head_title %}{{ action }} artículo{% endblock %}
+
+{% block page_content %}
+<div class="container mt-4" style="max-width: 600px;">
+  <h2>{{ action }} artículo</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">{{ action }}</button>
+  </form>
+</div>
+{% endblock %}
+

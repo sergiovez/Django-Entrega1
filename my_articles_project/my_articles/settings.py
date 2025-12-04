@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-q9^95(9qu!l&ta7$j+vq5^x=t$w*$nyv^z*%g51^4o!(845&1n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['django-entrega1.onrender.com']
 
 
 # Application definition
